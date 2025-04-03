@@ -16,12 +16,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background-color: #f4f4f4;
         }
 
-        object {
+        #pdf-container {
             width: 100%;
             height: 100%;
-            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
         }
 
         .fallback {
@@ -36,11 +44,13 @@
             text-decoration: none;
         }
     </style>
+    <!-- Incluir PDF.js desde el CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 </head>
 
 <body>
 
-    <object data="plan_estatal.pdf" type="application/pdf" id="pdfViewer"></object>
+    <div id="pdf-container"></div>
 
     <div class="fallback" id="fallbackMessage">
         <p>Tu navegador no puede mostrar el PDF. <a href="plan_estatal.pdf" target="_blank">Haz clic aquí para
@@ -49,14 +59,38 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            var pdfViewer = document.getElementById("pdfViewer");
-            var fallback = document.getElementById("fallbackMessage");
+            var url = 'plan_estatal.pdf';  // Ruta del archivo PDF
+            var pdfContainer = document.getElementById('pdf-container');
+            var fallback = document.getElementById('fallbackMessage');
 
-            // Detectar si el PDF no puede cargarse
-            pdfViewer.onerror = function () {
-                pdfViewer.style.display = "none";
-                fallback.style.display = "block";
-            };
+            // Intentar cargar el PDF
+            pdfjsLib.getDocument(url).promise
+                .then(function (pdf) {
+                    // Si el PDF se carga correctamente, renderizar la primera página
+                    pdf.getPage(1).then(function (page) {
+                        var scale = 1.5; // Ajuste de escala para la visualización
+                        var viewport = page.getViewport({ scale: scale });
+
+                        var canvas = document.createElement('canvas');
+                        var context = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+
+                        // Renderizar la página en el canvas
+                        page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        });
+
+                        // Agregar el canvas al contenedor
+                        pdfContainer.innerHTML = ''; // Limpiar contenido anterior
+                        pdfContainer.appendChild(canvas);
+                    });
+                })
+                .catch(function (error) {
+                    // Si ocurre un error al cargar el PDF, mostrar el mensaje de fallback
+                    fallback.style.display = 'block';
+                });
         });
     </script>
 
