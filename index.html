@@ -17,11 +17,13 @@
             justify-content: center;
             align-items: center;
             background-color: #f4f4f4;
+            flex-direction: column;
         }
 
         #pdf-container {
             width: 100%;
-            height: 100%;
+            height: calc(100% - 60px);
+            /* Deja espacio para los controles */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -30,6 +32,17 @@
         canvas {
             max-width: 100%;
             max-height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background-color: #eee;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
         }
 
         .fallback {
@@ -43,6 +56,13 @@
             color: blue;
             text-decoration: none;
         }
+
+        button {
+            font-size: 18px;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
     </style>
     <!-- Incluir PDF.js desde el CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
@@ -51,6 +71,12 @@
 <body>
 
     <div id="pdf-container"></div>
+
+    <div class="controls">
+        <button id="prevPage">Anterior</button>
+        <span id="pageNum">Página 1</span>
+        <button id="nextPage">Siguiente</button>
+    </div>
 
     <div class="fallback" id="fallbackMessage">
         <p>Tu navegador no puede mostrar el PDF. <a href="plan_estatal.pdf" target="_blank">Haz clic aquí para
@@ -62,35 +88,62 @@
             var url = 'plan_estatal.pdf';  // Ruta del archivo PDF
             var pdfContainer = document.getElementById('pdf-container');
             var fallback = document.getElementById('fallbackMessage');
+            var pageNum = 1; // Página actual
+            var pdfDoc = null;
+            var totalPages = 0;
 
-            // Intentar cargar el PDF
+            // Obtener el documento PDF
             pdfjsLib.getDocument(url).promise
                 .then(function (pdf) {
-                    // Si el PDF se carga correctamente, renderizar la primera página
-                    pdf.getPage(1).then(function (page) {
-                        var scale = 1.5; // Ajuste de escala para la visualización
-                        var viewport = page.getViewport({ scale: scale });
-
-                        var canvas = document.createElement('canvas');
-                        var context = canvas.getContext('2d');
-                        canvas.width = viewport.width;
-                        canvas.height = viewport.height;
-
-                        // Renderizar la página en el canvas
-                        page.render({
-                            canvasContext: context,
-                            viewport: viewport
-                        });
-
-                        // Agregar el canvas al contenedor
-                        pdfContainer.innerHTML = ''; // Limpiar contenido anterior
-                        pdfContainer.appendChild(canvas);
-                    });
+                    pdfDoc = pdf;
+                    totalPages = pdf.numPages;
+                    renderPage(pageNum);
                 })
                 .catch(function (error) {
-                    // Si ocurre un error al cargar el PDF, mostrar el mensaje de fallback
                     fallback.style.display = 'block';
                 });
+
+            // Función para renderizar una página específica
+            function renderPage(num) {
+                pdfDoc.getPage(num).then(function (page) {
+                    var scale = 1.5; // Ajuste de escala para la visualización
+                    var viewport = page.getViewport({ scale: scale });
+
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+
+                    // Renderizar la página en el canvas
+                    page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    });
+
+                    // Limpiar el contenedor y agregar el canvas con la página renderizada
+                    pdfContainer.innerHTML = '';
+                    pdfContainer.appendChild(canvas);
+
+                    // Actualizar el número de página visible
+                    document.getElementById('pageNum').textContent = 'Página ' + num;
+                });
+            }
+
+            // Navegar a la página anterior
+            document.getElementById('prevPage').addEventListener('click', function () {
+                if (pageNum > 1) {
+                    pageNum--;
+                    renderPage(pageNum);
+                }
+            });
+
+            // Navegar a la página siguiente
+            document.getElementById('nextPage').addEventListener('click', function () {
+                if (pageNum < totalPages) {
+                    pageNum++;
+                    renderPage(pageNum);
+                }
+            });
         });
     </script>
 
