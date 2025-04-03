@@ -91,6 +91,7 @@
         <input type="number" id="pageInput" min="1" />
         <button id="nextPage">Siguiente</button>
         <button id="lastPage">Última</button>
+        <button id="downloadBtn">Descargar</button>
     </div>
 
     <div class="fallback" id="fallbackMessage">
@@ -182,6 +183,14 @@
                 } else {
                     this.value = pageNum; // Revertir si el número es inválido
                 }
+            });
+
+            // Descargar el documento
+            document.getElementById('downloadBtn').addEventListener('click', function () {
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = 'plan_estatal.pdf'; // Nombre de archivo a descargar
+                link.click();
             });
         });
     </script>
