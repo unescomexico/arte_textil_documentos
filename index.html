@@ -22,7 +22,7 @@
 
         #pdf-container {
             width: 100%;
-            height: calc(100% - 60px);
+            height: calc(100% - 100px);
             /* Deja espacio para los controles */
             display: flex;
             justify-content: center;
@@ -43,6 +43,15 @@
             width: 100%;
             position: fixed;
             bottom: 0;
+            flex-wrap: wrap;
+        }
+
+        .controls button,
+        .controls input {
+            font-size: 18px;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
         }
 
         .fallback {
@@ -57,11 +66,14 @@
             text-decoration: none;
         }
 
-        button {
-            font-size: 18px;
-            padding: 10px;
-            margin: 5px;
-            cursor: pointer;
+        @media (max-width: 600px) {
+
+            .controls button,
+            .controls input {
+                font-size: 16px;
+                padding: 8px;
+                margin: 5px;
+            }
         }
     </style>
     <!-- Incluir PDF.js desde el CDN -->
@@ -73,9 +85,12 @@
     <div id="pdf-container"></div>
 
     <div class="controls">
+        <button id="firstPage">Primera</button>
         <button id="prevPage">Anterior</button>
         <span id="pageNum">Página 1</span>
+        <input type="number" id="pageInput" min="1" />
         <button id="nextPage">Siguiente</button>
+        <button id="lastPage">Última</button>
     </div>
 
     <div class="fallback" id="fallbackMessage">
@@ -126,6 +141,7 @@
 
                     // Actualizar el número de página visible
                     document.getElementById('pageNum').textContent = 'Página ' + num;
+                    document.getElementById('pageInput').value = num;
                 });
             }
 
@@ -142,6 +158,29 @@
                 if (pageNum < totalPages) {
                     pageNum++;
                     renderPage(pageNum);
+                }
+            });
+
+            // Ir a la primera página
+            document.getElementById('firstPage').addEventListener('click', function () {
+                pageNum = 1;
+                renderPage(pageNum);
+            });
+
+            // Ir a la última página
+            document.getElementById('lastPage').addEventListener('click', function () {
+                pageNum = totalPages;
+                renderPage(pageNum);
+            });
+
+            // Ir a la página especificada
+            document.getElementById('pageInput').addEventListener('change', function () {
+                var inputPage = parseInt(this.value);
+                if (inputPage >= 1 && inputPage <= totalPages) {
+                    pageNum = inputPage;
+                    renderPage(pageNum);
+                } else {
+                    this.value = pageNum; // Revertir si el número es inválido
                 }
             });
         });
