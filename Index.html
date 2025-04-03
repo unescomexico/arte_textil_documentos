@@ -16,15 +16,47 @@
         }
 
         iframe {
-            width: 100%;
+            width: 100vw;
             height: 100vh;
             border: none;
+        }
+
+        .fallback {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .fallback a {
+            font-size: 18px;
+            color: blue;
+            text-decoration: none;
         }
     </style>
 </head>
 
 <body>
-    <iframe src="plan_estatal.pdf"></iframe>
+
+    <iframe id="pdfViewer" src="plan_estatal.pdf"></iframe>
+
+    <div class="fallback" id="fallbackMessage">
+        <p>Tu navegador no puede mostrar el PDF. <a href="plan_estatal.pdf" target="_blank">Haz clic aquí para
+                verlo.</a></p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var iframe = document.getElementById("pdfViewer");
+            var fallback = document.getElementById("fallbackMessage");
+
+            // Detectar si el PDF se carga correctamente
+            iframe.onerror = function () {
+                iframe.style.display = "none";
+                fallback.style.display = "block";
+            };
+        });
+    </script>
+
 </body>
 
 </html>
